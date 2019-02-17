@@ -33,7 +33,7 @@
 
 // *** Default includes	and procedures *** //
 define('IN_PHPLOGCON', true);
-$gl_root_path = './../';
+$gl_root_path = dirname(dirname(__FILE__)) . '/';
 
 // Now include necessary include files!
 include_once($gl_root_path . 'include/functions_common.php');
@@ -65,9 +65,6 @@ function CleanData($optParam1, $optParam2, $optParam3, $optParam4)
 	// Check Source Type
 	if ( $mySource['SourceType'] == SOURCE_DB || $mySource['SourceType'] == SOURCE_PDO ) 
 	{
-		// Include LogStream facility
-		include($gl_root_path . 'classes/logstream.class.php');
-		
 		//Debug Output
 		PrintHTMLDebugInfo( DEBUG_INFO, "CleanData", GetAndReplaceLangStr($content["LN_CMD_CLEANINGDATAFOR"], $mySource['Name']) );
 
@@ -150,6 +147,7 @@ function CleanData($optParam1, $optParam2, $optParam3, $optParam4)
 // --- BEGIN Custom Code
 	//Additional Includes
 	include($gl_root_path . 'include/functions_debugoutput.php');
+	include($gl_root_path . 'classes/logstream.class.php');
 
 	// Run into Commandline part now!
 	/* Only run if we are in command line mode 
@@ -175,19 +173,6 @@ function CleanData($optParam1, $optParam2, $optParam3, $optParam4)
 		$operation = $_SERVER["argv"][1];
 	else
 		DieWithErrorMsg( $content["LN_CMD_NOOP"] );
-
-	// SourceID argv
-	if ( isset($_SERVER["argv"][2]) )
-	{
-		// Set to SourceID property!
-		$content['SOURCEID'] = $_SERVER["argv"][2];
-
-		// Check if exists
-		if ( !isset($content['Sources'][ $content['SOURCEID'] ]) )
-			DieWithErrorMsg( GetAndReplaceLangStr($content["LN_CMD_LOGSTREAMNOTFOUND"], $content['SOURCEID']) );
-	}
-	else
-		DieWithErrorMsg( $content["LN_CMD_NOLOGSTREAM"] );
 
 
 	// First Optional Parameter
@@ -218,8 +203,15 @@ function CleanData($optParam1, $optParam2, $optParam3, $optParam4)
 	// --- Operation Handling now
 	if ( $operation == "cleandata" )
 	{
-		// Run Parser only
-		CleanData($optparam1, $optparam2, $optParam3, $optParam4);
+		foreach ( $CFG['Sources'] as &$mySource )
+		{
+			if ( isset($mySource['SourceType']) && ( $mySource['SourceType'] == SOURCE_DB || $mySource['SourceType'] == SOURCE_PDO ) )
+			{
+				$content['SOURCEID'] = $mySource['ID'];
+				// Run Parser only
+				CleanData($optparam1, $optparam2, $optParam3, $optParam4);
+			}
+		}
 	}
 	// --- 
 // --- 

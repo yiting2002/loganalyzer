@@ -33,7 +33,7 @@
 
 // *** Default includes	and procedures *** //
 define('IN_PHPLOGCON', true);
-$gl_root_path = './../';
+$gl_root_path = dirname(dirname(__FILE__)) . '/';
 
 // --- IMPORTANT, read the script filename from argv! 
 // Operation argv
